@@ -26,9 +26,19 @@ const PiIntegration = (() => {
   //
   // Override for debugging with ?piSandbox=true or ?piSandbox=false.
   function detectSandbox() {
-    const forced = new URLSearchParams(location.search).get('piSandbox');
+    const params = new URLSearchParams(location.search);
+
+    // Manual override, for debugging.
+    const forced = params.get('piSandbox');
     if (forced === 'true') return true;
     if (forced === 'false') return false;
+
+    // Pi's own signal: the Sandbox loads the development URL with
+    // ?sandbox=true appended. Authoritative when present, so it wins over
+    // any heuristic of ours.
+    if (params.get('sandbox') === 'true') return true;
+
+    // Fallback: the Sandbox frames the app, the Pi Browser runs it top-level.
     return framed();
   }
 
