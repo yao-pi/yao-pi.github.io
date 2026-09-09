@@ -15,9 +15,22 @@
    --------------------------------------------------------------------------- */
 
 const PiIntegration = (() => {
-  // Testnet app → true. A Mainnet-registered app → false.
-  // Note that an app binds to one network at registration and cannot be moved.
-  const SANDBOX = true;
+  // The sandbox flag says WHERE the app is running, not which network it is on.
+  //
+  //   sandbox.minepi.com (desktop testing) → true
+  //   the real Pi Browser                  → false, even for a Testnet app
+  //
+  // Testnet vs Mainnet is fixed by the app registration and this flag has no
+  // bearing on it. Leaving it true inside the Pi Browser points the SDK at the
+  // sandbox host, so it is detected rather than hardcoded.
+  //
+  // Override for debugging with ?piSandbox=true or ?piSandbox=false.
+  function detectSandbox() {
+    const forced = new URLSearchParams(location.search).get('piSandbox');
+    if (forced === 'true') return true;
+    if (forced === 'false') return false;
+    return framed();
+  }
 
   // Only what this app actually needs. Add 'payments' when you wire payments,
   // and 'wallet_address' only if you genuinely need the address.
@@ -127,8 +140,12 @@ const PiIntegration = (() => {
       return;
     }
 
+    const sandbox = detectSandbox();
+    console.info('[pi] init sandbox:', sandbox,
+                 sandbox ? '(sandbox.minepi.com)' : '(Pi Browser)');
+
     try {
-      window.Pi.init({ version: '2.0', sandbox: SANDBOX });
+      window.Pi.init({ version: '2.0', sandbox });
     } catch (err) {
       console.error('[pi] init failed:', err);
       setStatus('error', 'SDK init failed');
