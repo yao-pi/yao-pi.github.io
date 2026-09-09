@@ -101,6 +101,11 @@ const Payments = (() => {
           console.info('[pay] cancelled:', paymentId);
           setStatus('Payment cancelled');
           setBusy(false);
+
+          // Reconcile with the backend. Without this the row sits at
+          // 'approved' forever while Pi has already cancelled it, and our
+          // record of what happened quietly stops being true.
+          reconcile(paymentId, { announce: false });
         },
 
         onError: (err, payment) => {
@@ -112,16 +117,26 @@ const Payments = (() => {
     );
   }
 
-  async function resolveIncomplete(id) {
+  /**
+   * Ask the backend to settle a payment against Pi's own view of it: complete
+   * it if the transaction reached the chain, cancel it otherwise.
+   *
+   * Used for two cases. A payment abandoned in an earlier session, where the
+   * user must be told because Pi blocks every new payment until it clears —
+   * and a payment the user just cancelled, where they already know and the
+   * reconciliation is only for our records.
+   */
+  async function reconcile(id, { announce = true } = {}) {
     if (!configured()) return;
     try {
       const out = await post('/payments/incomplete', { paymentId: id });
-      console.info('[pay] stale payment resolved:', out.action);
-      setStatus(`Earlier payment ${out.action}`);
+      console.info('[pay] reconciled:', id, '→', out.action);
+      if (announce) setStatus(`Earlier payment ${out.action}`);
     } catch (err) {
-      // Worth surfacing: until this clears, Pi refuses every new payment.
-      console.error('[pay] could not resolve stale payment:', err);
-      setStatus('A previous payment is stuck — new payments are blocked', 'error');
+      console.error('[pay] could not reconcile payment:', err);
+      if (announce) {
+        setStatus('A previous payment is stuck — new payments are blocked', 'error');
+      }
     }
   }
 
@@ -140,8 +155,8 @@ const Payments = (() => {
       setStatus('');
     });
 
-    window.addEventListener('pi:incomplete-payment', (e) => resolveIncomplete(e.detail.id));
+    window.addEventListener('pi:incomplete-payment', (e) => reconcile(e.detail.id));
   }
 
-  return { init, pay, resolveIncomplete };
+  return { init, pay, reconcile };
 })();
