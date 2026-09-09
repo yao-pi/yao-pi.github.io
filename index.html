@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#6750A4" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141218" media="(prefers-color-scheme: dark)">
+<title>Tap Tempo</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+
+<!-- Pi Platform SDK. Only resolves inside the Pi Browser; the app degrades
+     gracefully everywhere else so you can develop in a normal browser. -->
+<script src="https://sdk.minepi.com/pi-sdk.js"></script>
+</head>
+
+<body>
+  <header class="top-app-bar">
+    <h1 class="top-app-bar__title">Tap Tempo</h1>
+    <button class="chip" id="pi-chip" type="button" disabled>
+      <span class="chip__dot" id="pi-dot"></span>
+      <span class="chip__label" id="pi-label">Checking&hellip;</span>
+    </button>
+  </header>
+
+  <main class="content">
+    <section class="readout" aria-live="polite">
+      <div class="readout__value" id="bpm-value">--</div>
+      <div class="readout__unit">BPM</div>
+      <div class="readout__hint" id="bpm-hint">Tap the button to begin</div>
+    </section>
+
+    <button class="tap" id="tap-button" type="button" aria-label="Tap to set tempo">
+      <span class="tap__ring" id="tap-ring" aria-hidden="true"></span>
+      <span class="tap__label">TAP</span>
+    </button>
+
+    <div class="actions">
+      <button class="text-button" id="reset-button" type="button">Reset</button>
+    </div>
+  </main>
+
+  <script src="pi.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
