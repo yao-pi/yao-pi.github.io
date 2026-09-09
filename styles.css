@@ -162,6 +162,11 @@ body {
   padding: 16px 24px 32px;
 }
 
+/* The status line belongs to the actions row, not the 40px rhythm. */
+.content > .pay-status {
+  margin-top: -32px;
+}
+
 /* --- BPM readout ----------------------------------------------------------- */
 
 .readout {
@@ -297,6 +302,7 @@ body {
   min-height: 40px;
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .text-button {
@@ -332,6 +338,55 @@ body {
   cursor: default;
   background: transparent;
 }
+
+/* --- M3 filled tonal button ------------------------------------------------ */
+
+.tonal-button {
+  height: 40px;
+  padding: 0 24px;
+  border: none;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+  /* M3 label-large */
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  letter-spacing: 0.006em;
+  cursor: pointer;
+  transition: box-shadow 150ms var(--md-sys-motion-standard),
+              opacity 150ms var(--md-sys-motion-standard);
+}
+
+.tonal-button:hover:not(:disabled) { box-shadow: var(--md-sys-elevation-1); }
+
+.tonal-button:focus-visible {
+  outline: 3px solid var(--md-sys-color-primary);
+  outline-offset: 2px;
+}
+
+.tonal-button:disabled {
+  background: color-mix(in srgb, var(--md-sys-color-on-surface) 12%, transparent);
+  color: var(--md-sys-color-on-surface);
+  opacity: 0.38;
+  cursor: default;
+}
+
+/* --- Payment status line --------------------------------------------------- */
+
+.pay-status {
+  /* M3 body-small */
+  margin: 0;
+  min-height: 16px;
+  font-size: 12px;
+  line-height: 16px;
+  text-align: center;
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.pay-status[data-tone="ok"]    { color: var(--md-sys-color-primary); }
+.pay-status[data-tone="error"] { color: var(--md-sys-color-error); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {

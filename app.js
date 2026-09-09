@@ -117,5 +117,6 @@
   resetBtn.addEventListener('click', reset);
 
   render();
+  Payments.init();
   PiIntegration.init();
 })();

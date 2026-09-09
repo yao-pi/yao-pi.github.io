@@ -32,9 +32,9 @@ const PiIntegration = (() => {
     return framed();
   }
 
-  // Only what this app actually needs. Add 'payments' when you wire payments,
-  // and 'wallet_address' only if you genuinely need the address.
-  const SCOPES = ['username'];
+  // Only what this app actually needs. 'wallet_address' is deliberately absent
+  // — we never need the address, so we do not ask for it.
+  const SCOPES = ['username', 'payments'];
 
   // sdk.minepi.com serves the script to any browser, so window.Pi existing
   // proves nothing. Outside the Pi Browser there is no host app to answer the
@@ -65,7 +65,9 @@ const PiIntegration = (() => {
 
   let els = {};
   let user = null;
-  let mode = null;   // resolved sandbox flag; null until init() runs
+  let mode = null;          // resolved sandbox flag; null until init() runs
+  let accessToken = null;   // proves identity to our backend; never persisted
+  let pendingIncomplete = null;
 
   function setStatus(state, label) {
     if (!els.dot) return;
@@ -78,10 +80,15 @@ const PiIntegration = (() => {
   }
 
   /* Fires when a previous payment never reached developer_completed. Pi blocks
-     new payments until it is resolved, so a real app forwards the identifier to
-     its backend, which calls POST /v2/payments/{id}/complete. */
+     ALL new payments for this user until it clears, so it must be resolved
+     rather than logged.
+
+     It fires during authenticate(), before we hold an access token, and the
+     backend needs that token to verify who is asking. So it is queued here and
+     drained once sign-in succeeds. */
   function onIncompletePaymentFound(payment) {
-    console.warn('[pi] incomplete payment found:', payment);
+    console.warn('[pi] incomplete payment found, queued:', payment?.identifier);
+    pendingIncomplete = payment?.identifier ?? null;
   }
 
   function timeout(ms) {
@@ -106,7 +113,19 @@ const PiIntegration = (() => {
       ]);
 
       user = auth.user;
+      accessToken = auth.accessToken;
       setStatus('ok', '@' + user.username);
+
+      // Lets the payments module enable its UI without reaching in here.
+      window.dispatchEvent(new CustomEvent('pi:authenticated', {
+        detail: { username: user.username, uid: user.uid }
+      }));
+
+      if (pendingIncomplete) {
+        const id = pendingIncomplete;
+        pendingIncomplete = null;
+        window.dispatchEvent(new CustomEvent('pi:incomplete-payment', { detail: { id } }));
+      }
 
       // The uid is app-scoped: this same Pioneer gets a different uid in every
       // app, so it is a stable key for your own database and nothing more.
@@ -162,5 +181,11 @@ const PiIntegration = (() => {
     signIn();
   }
 
-  return { init, signIn, getUser: () => user, getSandbox: () => mode };
+  return {
+    init,
+    signIn,
+    getUser: () => user,
+    getSandbox: () => mode,
+    getAccessToken: () => accessToken
+  };
 })();

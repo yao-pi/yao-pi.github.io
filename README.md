@@ -13,7 +13,7 @@ Source of truth is the private `proj-newpiapp` repo. Only the four app files
 live here. To resync after changing them there:
 
 ```bash
-for f in index.html styles.css app.js pi.js; do
+for f in index.html styles.css app.js pi.js payments.js; do
   cp ~/Claude/proj-newpiapp/"$f" ~/Claude/yao-pi.github.io/"$f"
 done
 cd ~/Claude/yao-pi.github.io && git add -A && git commit -m "Sync from proj-newpiapp" && git push
