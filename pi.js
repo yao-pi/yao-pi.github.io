@@ -65,6 +65,7 @@ const PiIntegration = (() => {
 
   let els = {};
   let user = null;
+  let mode = null;   // resolved sandbox flag; null until init() runs
 
   function setStatus(state, label) {
     if (!els.dot) return;
@@ -140,12 +141,16 @@ const PiIntegration = (() => {
       return;
     }
 
-    const sandbox = detectSandbox();
-    console.info('[pi] init sandbox:', sandbox,
-                 sandbox ? '(sandbox.minepi.com)' : '(Pi Browser)');
+    // Recorded rather than only logged: console output is not reliably visible
+    // in every viewer, and this is the one setting worth being able to confirm
+    // from inside the Pi Browser. Check it with PiIntegration.getSandbox().
+    mode = detectSandbox();
+    els.chip.title = mode ? 'Pi SDK: sandbox' : 'Pi SDK: Pi Browser';
+    console.info('[pi] init sandbox:', mode,
+                 mode ? '(sandbox.minepi.com)' : '(Pi Browser)');
 
     try {
-      window.Pi.init({ version: '2.0', sandbox });
+      window.Pi.init({ version: '2.0', sandbox: mode });
     } catch (err) {
       console.error('[pi] init failed:', err);
       setStatus('error', 'SDK init failed');
@@ -157,5 +162,5 @@ const PiIntegration = (() => {
     signIn();
   }
 
-  return { init, signIn, getUser: () => user };
+  return { init, signIn, getUser: () => user, getSandbox: () => mode };
 })();
