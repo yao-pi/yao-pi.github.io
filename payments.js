@@ -10,7 +10,7 @@
    --------------------------------------------------------------------------- */
 
 const Payments = (() => {
-  const BACKEND = 'REPLACE_WITH_WORKER_URL';   // e.g. https://pi-payments.<you>.workers.dev
+  const BACKEND = 'https://pi-payments.yao-pi.workers.dev';
 
   const ITEM = 'tip-small';   // priced server-side; see CATALOG in the Worker
   const AMOUNT = 0.5;         // display only — the Worker re-checks this
